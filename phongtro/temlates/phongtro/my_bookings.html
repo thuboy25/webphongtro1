@@ -1,0 +1,275 @@
+﻿{% load humanize %}
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yêu cầu của tôi | Trọ Tốt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 text-slate-800">
+    <div class="mx-auto grid min-h-screen max-w-7xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-12">
+      <aside class="rounded-2xl bg-white p-5 shadow lg:col-span-3">
+        <h2 class="text-xl font-bold text-slate-900">Trung tâm người thuê</h2>
+        <p class="mt-1 text-sm text-slate-500">Xin chào {{ request.user.username }}</p>
+
+        <nav class="mt-6 space-y-2 text-sm">
+          <a href="{% url 'phongtro:profile' %}" class="block rounded-lg px-3 py-2 hover:bg-slate-100">Trang tài khoản</a>
+          <a href="{% url 'phongtro:my_bookings' %}" class="block rounded-lg bg-indigo-50 px-3 py-2 font-semibold text-indigo-700">Yêu cầu của tôi</a>
+          <a href="{% url 'phongtro:public_home_page' %}" class="block rounded-lg px-3 py-2 hover:bg-slate-100">Danh sách phòng</a>
+          <a href="{% url 'phongtro:home_page' %}" class="block rounded-lg px-3 py-2 hover:bg-slate-100">Về trang chủ</a>
+          <a href="{% url 'phongtro:logout' %}" class="block rounded-lg px-3 py-2 text-red-600 hover:bg-red-50">Đăng xuất</a>
+        </nav>
+      </aside>
+
+      <main class="rounded-2xl bg-white p-5 shadow lg:col-span-9">
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Yêu cầu của tôi</h1>
+            <p class="mt-1 text-sm text-slate-500">Theo dõi trạng thái yêu cầu thuê phòng, xem lịch sử và hủy yêu cầu khi còn chờ duyệt.</p>
+          </div>
+          <a href="{% url 'phongtro:public_home_page' %}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Tìm phòng khác</a>
+        </div>
+
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for message in messages %}
+          <div class="rounded-lg px-3 py-2 text-sm {% if 'error' in message.tags %}bg-red-100 text-red-700{% elif 'success' in message.tags %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-700{% endif %}">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="mb-5 grid grid-cols-2 gap-3 text-sm md:grid-cols-5">
+          <div class="rounded-2xl bg-slate-50 px-4 py-3">
+            <p class="text-slate-500">Tổng yêu cầu</p>
+            <p class="mt-1 text-2xl font-extrabold text-slate-900">{{ total_bookings }}</p>
+          </div>
+          <div class="rounded-2xl bg-amber-50 px-4 py-3">
+            <p class="text-amber-700">Chờ duyệt</p>
+            <p class="mt-1 text-2xl font-extrabold text-amber-700">{{ pending_count }}</p>
+          </div>
+          <div class="rounded-2xl bg-emerald-50 px-4 py-3">
+            <p class="text-emerald-700">Đã duyệt</p>
+            <p class="mt-1 text-2xl font-extrabold text-emerald-700">{{ approved_count }}</p>
+          </div>
+          <div class="rounded-2xl bg-rose-50 px-4 py-3">
+            <p class="text-rose-700">Từ chối</p>
+            <p class="mt-1 text-2xl font-extrabold text-rose-700">{{ rejected_count }}</p>
+          </div>
+          <div class="rounded-2xl bg-slate-100 px-4 py-3">
+            <p class="text-slate-600">Đã hủy</p>
+            <p class="mt-1 text-2xl font-extrabold text-slate-700">{{ withdrawn_count }}</p>
+          </div>
+        </div>
+
+        <form method="get" class="mb-5 flex flex-wrap items-end gap-2">
+          <div>
+            <label for="statusFilter" class="mb-1 block text-sm font-semibold text-slate-700">Lọc trạng thái</label>
+            <select id="statusFilter" name="status" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <option value="" {% if not selected_status %}selected{% endif %}>Tất cả</option>
+              <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Chờ duyệt</option>
+              <option value="approved" {% if selected_status == 'approved' %}selected{% endif %}>Đã duyệt</option>
+              <option value="canceled" {% if selected_status == 'canceled' %}selected{% endif %}>Từ chối</option>
+              <option value="withdrawn" {% if selected_status == 'withdrawn' %}selected{% endif %}>Đã hủy</option>
+            </select>
+          </div>
+          <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Lọc</button>
+          <a href="{% url 'phongtro:my_bookings' %}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Bỏ lọc</a>
+        </form>
+
+        <div class="overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-600">
+              <tr>
+                <th class="px-4 py-3">Phòng</th>
+                <th class="px-4 py-3">Chủ trọ</th>
+                <th class="px-4 py-3">SĐT liên hệ</th>
+                <th class="px-4 py-3">Thời gian gửi</th>
+                <th class="px-4 py-3">Trạng thái</th>
+                <th class="px-4 py-3">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for booking in bookings %}
+              <tr class="border-t border-slate-100 align-top">
+                <td class="px-4 py-3">
+                  <p class="font-semibold text-slate-900">{{ booking.room.title }}</p>
+                  <p class="mt-1 text-xs text-slate-500">{{ booking.room.address }}</p>
+                  <p class="mt-1 text-xs font-medium text-slate-600">{{ booking.room.price|floatformat:0|intcomma }} đ/tháng</p>
+                </td>
+                <td class="px-4 py-3">
+                  <p class="font-semibold text-slate-900">{{ booking.room.owner.username|default:'Chưa cập nhật' }}</p>
+                  <p class="mt-1 text-xs text-slate-500">Người gửi: {{ booking.tenant_name }}</p>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">{{ booking.room.owner_phone|default:'Chưa cập nhật' }}</td>
+                <td class="px-4 py-3 whitespace-nowrap">{{ booking.created_at|date:'d/m/Y H:i' }}</td>
+                <td class="px-4 py-3">
+                  {% if booking.status == 'pending' %}
+                  <span class="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">Chờ duyệt</span>
+                  {% elif booking.status == 'approved' %}
+                  <span class="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Đã duyệt</span>
+                  {% elif booking.status == 'canceled' %}
+                  <span class="rounded-full bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-700">Từ chối</span>
+                  {% else %}
+                  <span class="rounded-full bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-700">Đã hủy</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      class="js-open-booking-modal rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                      data-room="{{ booking.room.title }}"
+                      data-address="{{ booking.room.address }}"
+                      data-price="{{ booking.room.price|floatformat:0|intcomma }} đ/tháng"
+                      data-landlord="{{ booking.room.owner.username|default:'Chưa cập nhật' }}"
+                      data-landlord-phone="{{ booking.room.owner_phone|default:'Chưa cập nhật' }}"
+                      data-tenant="{{ booking.tenant_name }}"
+                      data-phone="{{ booking.phone }}"
+                      data-father-name="{{ booking.father_name }}"
+                      data-father-phone="{{ booking.father_phone }}"
+                      data-mother-name="{{ booking.mother_name }}"
+                      data-mother-phone="{{ booking.mother_phone }}"
+                      data-note="{{ booking.note|default:'Không có ghi chú' }}"
+                      data-status="{{ booking.get_status_display }}"
+                      data-created-at="{{ booking.created_at|date:'d/m/Y H:i' }}"
+                    >
+                      Chi tiết
+                    </button>
+                    {% if booking.room.status == 'available' %}
+                    <a href="{% url 'phongtro:room_detail' booking.room.id %}" class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800">Xem phòng</a>
+                    {% else %}
+                    <span class="rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600">Phòng không còn công khai</span>
+                    {% endif %}
+                    {% if booking.status == 'pending' %}
+                    <form method="post" action="{% url 'phongtro:cancel_my_booking' booking.id %}" onsubmit="return confirm('Bạn muốn hủy yêu cầu thuê phòng này?');">
+                      {% csrf_token %}
+                      <button type="submit" class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700">Hủy yêu cầu</button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="px-4 py-10 text-center">
+                  <p class="font-semibold text-slate-700">Bạn chưa có yêu cầu thuê phòng nào.</p>
+                  <p class="mt-1 text-sm text-slate-500">Khi gửi yêu cầu mới, lịch sử đặt phòng sẽ hiển thị tại đây.</p>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if is_paginated %}
+        <div class="mt-4 flex items-center justify-center gap-2 text-sm">
+          {% if page_obj.has_previous %}
+          <a class="rounded border px-3 py-1 hover:bg-slate-100" href="?page={{ page_obj.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}">Trước</a>
+          {% endif %}
+          <span class="rounded bg-slate-100 px-3 py-1">Trang {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+          <a class="rounded border px-3 py-1 hover:bg-slate-100" href="?page={{ page_obj.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}">Sau</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </main>
+    </div>
+
+    <div id="bookingDetailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 px-4">
+      <div class="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-2xl">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-slate-900">Chi tiết yêu cầu thuê phòng</h2>
+          <button type="button" id="closeBookingModal" class="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900">X</button>
+        </div>
+        <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+          <div><span class="text-slate-500">Tên phòng:</span><p id="modalRoom" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Giá thuê:</span><p id="modalPrice" class="font-semibold text-slate-900"></p></div>
+          <div class="sm:col-span-2"><span class="text-slate-500">Địa chỉ:</span><p id="modalAddress" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Chủ trọ:</span><p id="modalLandlord" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">SĐT chủ trọ:</span><p id="modalLandlordPhone" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Người gửi:</span><p id="modalTenant" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">SĐT liên hệ:</span><p id="modalPhone" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Tên bố:</span><p id="modalFatherName" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">SĐT bố:</span><p id="modalFatherPhone" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Tên mẹ:</span><p id="modalMotherName" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">SĐT mẹ:</span><p id="modalMotherPhone" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Trạng thái:</span><p id="modalStatus" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Thời gian gửi:</span><p id="modalCreatedAt" class="font-semibold text-slate-900"></p></div>
+          <div class="sm:col-span-2"><span class="text-slate-500">Ghi chú:</span><p id="modalNote" class="font-semibold text-slate-900"></p></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const modal = document.getElementById('bookingDetailModal');
+        const closeBtn = document.getElementById('closeBookingModal');
+        const openButtons = document.querySelectorAll('.js-open-booking-modal');
+        if (!modal || !closeBtn || !openButtons.length) return;
+
+        const fields = {
+          room: document.getElementById('modalRoom'),
+          price: document.getElementById('modalPrice'),
+          address: document.getElementById('modalAddress'),
+          landlord: document.getElementById('modalLandlord'),
+          landlordPhone: document.getElementById('modalLandlordPhone'),
+          tenant: document.getElementById('modalTenant'),
+          phone: document.getElementById('modalPhone'),
+          fatherName: document.getElementById('modalFatherName'),
+          fatherPhone: document.getElementById('modalFatherPhone'),
+          motherName: document.getElementById('modalMotherName'),
+          motherPhone: document.getElementById('modalMotherPhone'),
+          status: document.getElementById('modalStatus'),
+          createdAt: document.getElementById('modalCreatedAt'),
+          note: document.getElementById('modalNote'),
+        };
+
+        function setText(element, value) {
+          if (!element) return;
+          element.textContent = value || '-';
+        }
+
+        function openModal(button) {
+          const data = button.dataset;
+          setText(fields.room, data.room);
+          setText(fields.price, data.price);
+          setText(fields.address, data.address);
+          setText(fields.landlord, data.landlord);
+          setText(fields.landlordPhone, data.landlordPhone);
+          setText(fields.tenant, data.tenant);
+          setText(fields.phone, data.phone);
+          setText(fields.fatherName, data.fatherName);
+          setText(fields.fatherPhone, data.fatherPhone);
+          setText(fields.motherName, data.motherName);
+          setText(fields.motherPhone, data.motherPhone);
+          setText(fields.status, data.status);
+          setText(fields.createdAt, data.createdAt);
+          setText(fields.note, data.note);
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        }
+
+        function closeModal() {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
+
+        openButtons.forEach((button) => {
+          button.addEventListener('click', () => openModal(button));
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (event) => {
+          if (event.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') closeModal();
+        });
+      })();
+    </script>
+  </body>
+</html>
+

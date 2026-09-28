@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="vi">
+  {% load static %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bảng điều khiển Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .panel-grid {
+        background-image: linear-gradient(to right, rgba(148, 163, 184, 0.16) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(148, 163, 184, 0.16) 1px, transparent 1px);
+        background-size: 24px 24px;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-100 text-slate-900">
+    <div class="min-h-screen lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
+      <aside class="border-r border-slate-200 bg-white">
+        <div class="border-b border-slate-200 px-6 py-6">
+          <img src="{% static 'phongtro/images/tro-tot-logo.svg' %}" alt="Trọ Tốt" class="h-28 w-full object-contain object-left" />
+        </div>
+
+        <div class="px-4 py-6">
+          <nav class="space-y-1 text-lg">
+            <a href="{% url 'phongtro:admin_dashboard' %}" class="flex items-center gap-3 rounded-2xl {% if active_admin_menu == 'dashboard' %}bg-indigo-50 font-semibold text-indigo-700{% else %}px-4 py-3 text-slate-700 hover:bg-slate-100{% endif %} px-4 py-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10Zm10 8h8V11h-8v10ZM3 21h8v-6H3v6Zm10-10h8V3h-8v8Z"/></svg>
+              Tổng quan
+            </a>
+            <a href="{% url 'phongtro:admin_landlords' %}" class="flex items-center gap-3 rounded-2xl {% if active_admin_menu == 'landlords' %}bg-indigo-50 font-semibold text-indigo-700{% else %}text-slate-700 hover:bg-slate-100{% endif %} px-4 py-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm-7 9a7 7 0 1 1 14 0Z"/><path d="M19 8h3v2h-3Zm-2.36-3.05 2.12-2.12 1.41 1.41-2.12 2.12ZM19 15h3v2h-3Zm-2.36 4.05 1.41-1.41 2.12 2.12-1.41 1.41ZM2 15h3v2H2Zm0-7h3v2H2Z"/></svg>
+              Chủ trọ
+            </a>
+            <a href="{% url 'phongtro:admin_tenants' %}" class="flex items-center gap-3 rounded-2xl {% if active_admin_menu == 'tenants' %}bg-indigo-50 font-semibold text-indigo-700{% else %}text-slate-700 hover:bg-slate-100{% endif %} px-4 py-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-8 2a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm8 2c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4ZM8 15c-.29 0-.62.02-.97.05A5.41 5.41 0 0 1 10 19v3H0v-3c0-2.66 5.33-4 8-4Z"/></svg>
+              Người thuê
+            </a>
+            <a href="{% url 'phongtro:admin_rooms' %}" class="flex items-center gap-3 rounded-2xl {% if active_admin_menu == 'rooms' %}bg-indigo-50 font-semibold text-indigo-700{% else %}text-slate-700 hover:bg-slate-100{% endif %} px-4 py-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M4 2h10a2 2 0 0 1 2 2v16H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm14 7h2v11h-2Zm0-5h2v3h-2Z"/></svg>
+              Phòng trọ
+            </a>
+          </nav>
+
+          <div class="mt-8 px-4 text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Hệ thống</div>
+          <nav class="mt-3 space-y-1 text-lg">
+            <a href="#" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-700 hover:bg-slate-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="m19.14 12.94.04-.94-.04-.94 2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.2 7.2 0 0 0-1.63-.94L14.4 2.8a.5.5 0 0 0-.49-.4h-3.84a.5.5 0 0 0-.49.4L9.25 5.32a7.2 7.2 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58-.04.94.04.94-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.39 1.05.7 1.63.94l.33 2.52a.5.5 0 0 0 .49.4h3.84a.5.5 0 0 0 .49-.4l.33-2.52c.58-.24 1.13-.55 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64ZM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5Z"/></svg>
+              Cài đặt
+            </a>
+          </nav>
+        </div>
+
+        <div class="mt-auto border-t border-slate-200 px-6 py-5">
+          <div class="flex items-center gap-3">
+            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700">AD</div>
+            <div>
+              <p class="font-semibold">{{ request.user.get_full_name|default:request.user.username }}</p>
+              <p class="text-sm text-slate-500">Admin</p>
+            </div>
+            <a href="{% url 'phongtro:logout' %}" class="ml-auto rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" title="Đăng xuất">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17v-2h4V9h-4V7h6v10Zm-7 4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8v2H3v14h8v2Zm14.59-4.59L20 14l-2.41-2.41L19 10.17 22.83 14 19 17.83Z"/></svg>
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <header class="flex flex-wrap items-center gap-4 border-b border-slate-200 bg-white px-6 py-4 lg:px-8">
+          <div class="flex min-w-[320px] flex-1 items-center gap-3 rounded-2xl bg-slate-100 px-5 py-4 text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="m21 20.29-4.88-4.88a7 7 0 1 0-.71.71L20.29 21ZM5 10a5 5 0 1 1 5 5 5 5 0 0 1-5-5Z"/></svg>
+            <span>Tìm kiếm dữ liệu, chủ trọ...</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="rounded-2xl bg-slate-100 p-4 text-slate-700 hover:bg-slate-200">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2Zm6-6V11a6 6 0 1 0-12 0v5L4 18v1h16v-1Z"/></svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="space-y-8 px-6 py-8 lg:px-8">
+          <section class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 class="text-5xl font-black tracking-tight">Bảng điều khiển</h2>
+              <p class="mt-2 text-lg text-slate-500">Chào mừng quay trở lại, dữ liệu cập nhật từ hệ thống quản trị.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <div class="flex overflow-hidden rounded-2xl border border-slate-200 bg-white text-lg">
+                <a href="?period=today" class="{% if selected_period == 'today' %}bg-indigo-700 font-semibold text-white{% else %}text-slate-700 hover:bg-slate-50{% endif %} px-5 py-3">Hôm nay</a>
+                <a href="?period=week" class="{% if selected_period == 'week' %}bg-indigo-700 font-semibold text-white{% else %}text-slate-700 hover:bg-slate-50{% endif %} px-5 py-3">Tuần</a>
+                <a href="?period=month" class="{% if selected_period == 'month' %}bg-indigo-700 font-semibold text-white{% else %}text-slate-700 hover:bg-slate-50{% endif %} px-5 py-3">Tháng</a>
+                <a href="?period=year" class="{% if selected_period == 'year' %}bg-indigo-700 font-semibold text-white{% else %}text-slate-700 hover:bg-slate-50{% endif %} px-5 py-3">Năm</a>
+              </div>
+              <button class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-lg text-slate-700">Tất cả khu vực</button>
+            </div>
+          </section>
+
+          <section class="grid gap-6 xl:grid-cols-3">
+            <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm-7 9a7 7 0 1 1 14 0Z"/></svg>
+                </div>
+                <span class="text-lg font-bold text-emerald-600">{{ selected_period_label }}</span>
+              </div>
+              <p class="mt-6 text-lg text-slate-500">Chủ trọ mới</p>
+              <p class="mt-2 text-5xl font-black">{{ total_landlords }}</p>
+            </article>
+
+            <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-8 2a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm8 2c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4ZM8 15c-.29 0-.62.02-.97.05A5.41 5.41 0 0 1 10 19v3H0v-3c0-2.66 5.33-4 8-4Z"/></svg>
+                </div>
+                <span class="text-lg font-bold text-emerald-600">{{ selected_period_label }}</span>
+              </div>
+              <p class="mt-6 text-lg text-slate-500">Người thuê mới</p>
+              <p class="mt-2 text-5xl font-black">{{ total_tenants }}</p>
+            </article>
+
+            <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="currentColor"><path d="M4 2h10a2 2 0 0 1 2 2v16H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm14 7h2v11h-2Zm0-5h2v3h-2Z"/></svg>
+                </div>
+                <span class="text-lg font-bold text-rose-600">{{ selected_period_label }}</span>
+              </div>
+              <p class="mt-6 text-lg text-slate-500">Phòng trọ mới</p>
+              <p class="mt-2 text-5xl font-black">{{ total_rooms }}</p>
+            </article>
+          </section>
+
+          <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <h3 class="text-3xl font-black">Tăng trưởng người dùng</h3>
+              <div class="flex items-center gap-6 text-lg text-slate-500">
+                <span class="flex items-center gap-2"><span class="h-4 w-4 rounded-full bg-indigo-700"></span>Chủ trọ</span>
+                <span class="flex items-center gap-2"><span class="h-4 w-4 rounded-full bg-violet-400"></span>Người thuê</span>
+              </div>
+            </div>
+            <div class="panel-grid rounded-3xl border border-dashed border-slate-200 p-6">
+              <div class="grid h-[320px] items-end gap-4" style="grid-template-columns: repeat({{ user_growth_points|length }}, minmax(0, 1fr));">
+                {% for point in user_growth_points %}
+                <div class="flex h-full flex-col justify-end gap-3">
+                  <div class="flex h-full items-end gap-2">
+                    <div class="w-1/2 rounded-t-2xl bg-indigo-300" style="height: {{ point.primary_height }}%;"></div>
+                    <div class="w-1/2 rounded-t-2xl bg-violet-300" style="height: {{ point.secondary_height }}%;"></div>
+                  </div>
+                  <p class="text-center text-xs text-slate-400">{{ point.label }}</p>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </section>
+
+          <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h3 class="text-3xl font-black">Tỷ lệ lấp đầy phòng</h3>
+                <p class="mt-2 text-lg text-slate-500">Phân bổ phòng còn trống, đã thuê và bảo trì trên toàn hệ thống.</p>
+              </div>
+              <div class="rounded-2xl bg-slate-100 px-4 py-3 text-right">
+                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Tổng số phòng</p>
+                <p class="mt-1 text-3xl font-black text-slate-900">{{ occupancy_total_rooms }}</p>
+              </div>
+            </div>
+
+            <div class="panel-grid rounded-3xl border border-dashed border-slate-200 p-6">
+              <div class="grid gap-8 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-center">
+                <div class="flex justify-center">
+                  <div class="relative h-72 w-72 rounded-full shadow-sm" style="background: {{ occupancy_chart_style }};">
+                    <div class="absolute inset-10 flex flex-col items-center justify-center rounded-full bg-white text-center shadow-inner">
+                      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Đã thuê</p>
+                      <p class="mt-2 text-5xl font-black text-slate-900">{{ rented_room_percent|floatformat:1 }}%</p>
+                      <p class="mt-2 text-sm text-slate-500">{{ rented_room_count }}/{{ occupancy_total_rooms }} phòng</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div class="flex items-center justify-between gap-4">
+                      <div class="flex items-center gap-3">
+                        <span class="h-4 w-4 rounded-full bg-indigo-700"></span>
+                        <div>
+                          <p class="font-semibold text-slate-900">Đã thuê</p>
+                          <p class="text-sm text-slate-500">Phòng đang được khai thác</p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-2xl font-black text-slate-900">{{ rented_room_count }}</p>
+                        <p class="text-sm font-semibold text-indigo-700">{{ rented_room_percent|floatformat:1 }}%</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div class="flex items-center justify-between gap-4">
+                      <div class="flex items-center gap-3">
+                        <span class="h-4 w-4 rounded-full bg-emerald-500"></span>
+                        <div>
+                          <p class="font-semibold text-slate-900">Còn trống</p>
+                          <p class="text-sm text-slate-500">Phòng sẵn sàng cho thuê</p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-2xl font-black text-slate-900">{{ available_room_count }}</p>
+                        <p class="text-sm font-semibold text-emerald-600">{{ available_room_percent|floatformat:1 }}%</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div class="flex items-center justify-between gap-4">
+                      <div class="flex items-center gap-3">
+                        <span class="h-4 w-4 rounded-full bg-slate-300"></span>
+                        <div>
+                          <p class="font-semibold text-slate-900">Bảo trì</p>
+                          <p class="text-sm text-slate-500">Phòng tạm ngưng khai thác</p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-2xl font-black text-slate-900">{{ maintenance_room_count }}</p>
+                        <p class="text-sm font-semibold text-slate-500">{{ maintenance_room_percent|floatformat:1 }}%</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-6 py-5">
+              <h3 class="text-3xl font-black">Chủ trọ mới đăng ký</h3>
+              <a href="{% url 'phongtro:admin_landlords' %}" class="text-xl font-semibold text-indigo-700">Tất cả chủ trọ</a>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-left">
+                <thead class="bg-slate-50 text-lg text-slate-500">
+                  <tr>
+                    <th class="px-6 py-4 font-semibold">Họ và Tên</th>
+                    <th class="px-6 py-4 font-semibold">Ngày tham gia</th>
+                    <th class="px-6 py-4 font-semibold">Số lượng phòng</th>
+                    <th class="px-6 py-4 font-semibold">Trạng thái</th>
+                    <th class="px-6 py-4 font-semibold">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for landlord in recent_landlords %}
+                  <tr class="border-t border-slate-100 text-slate-700">
+                    <td class="px-6 py-4 font-semibold text-slate-900">{{ landlord.get_full_name|default:landlord.username }}</td>
+                    <td class="px-6 py-4">{{ landlord.date_joined|date:"d/m/Y H:i" }}</td>
+                    <td class="px-6 py-4">{{ landlord.total_rooms }}</td>
+                    <td class="px-6 py-4">
+                      <span class="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">Đang hoạt động</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-400">...</td>
+                  </tr>
+                  {% empty %}
+                  <tr class="border-t border-slate-100">
+                    <td colspan="5" class="px-6 py-12 text-center text-lg text-slate-400">Chưa có chủ trọ mới trong khoảng thời gian này.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

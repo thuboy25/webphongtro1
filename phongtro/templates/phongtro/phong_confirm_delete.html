@@ -1,0 +1,21 @@
+{% extends 'phongtro/base.html' %}
+
+{% block title %}Xoa phong{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-6">
+    <div class="card border-danger shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 text-danger">Xac nhan xoa phong</h1>
+        <p class="mb-3">Ban co chac chan muon xoa phong <strong>{{ object.ten_phong }}</strong>?</p>
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Xoa</button>
+          <a href="{% url 'phongtro:phong_list' %}" class="btn btn-secondary">Huy</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'phongtro/base.html' %}
+
+{% block title %}Chi tiet phong{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h1 class="h4">{{ phong.ten_phong }}</h1>
+    <p class="mb-1"><strong>Khu vuc:</strong> {{ phong.khu_vuc }}</p>
+    <p class="mb-1"><strong>Gia:</strong> {{ phong.gia }} VND/thang</p>
+    <p class="mb-1"><strong>Dien tich:</strong> {{ phong.dien_tich }} m2</p>
+    <p class="mb-1"><strong>Trang thai:</strong> {{ phong.get_trang_thai_display }}</p>
+    <p class="mb-3"><strong>Mo ta:</strong> {{ phong.mo_ta|default:'Khong co mo ta.' }}</p>
+
+    <a href="{% url 'phongtro:phong_list' %}" class="btn btn-secondary">Quay lai</a>
+    {% if can_manage_posts %}
+    <a href="{% url 'phongtro:phong_update' phong.pk %}" class="btn btn-warning">Sua</a>
+    <a href="{% url 'phongtro:phong_delete' phong.pk %}" class="btn btn-danger">Xoa</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thêm phòng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      #createInteractiveMap {
+        height: 18rem;
+        width: 100%;
+        border-radius: 0.5rem;
+        border: 1px solid rgb(226 232 240);
+      }
+    </style>
+  </head>
+  <body class="bg-slate-100">
+    <div class="mx-auto my-10 max-w-2xl rounded-xl bg-white p-6 shadow">
+      <h1 class="mb-4 text-2xl font-bold">Thêm phòng trọ mới</h1>
+
+      {% if messages %}
+      <div class="mb-4 space-y-2">
+        {% for message in messages %}
+        <p class="rounded px-3 py-2 text-sm {% if 'error' in message.tags %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">{{ message }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {% csrf_token %}
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Tiêu đề tin</label>
+          <input name="title" type="text" class="w-full rounded border px-3 py-2" required />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Giá cho thuê</label>
+          <input name="price" type="number" class="w-full rounded border px-3 py-2" required />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Diện tích (m²)</label>
+          <input name="area" type="number" step="0.01" class="w-full rounded border px-3 py-2" required />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Địa chỉ</label>
+          <input id="createRoomAddress" name="address" type="text" class="w-full rounded border px-3 py-2" required />
+        </div>
+        <input id="createMapLat" name="latitude" type="hidden" />
+        <input id="createMapLng" name="longitude" type="hidden" />
+        <div class="sm:col-span-2 rounded-lg border border-slate-200 p-3">
+          <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p class="text-sm font-semibold text-slate-800">Ghim vị trí trên bản đồ</p>
+            <div class="flex gap-2">
+              <button id="previewCreateMapBtn" type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100">Xem bản đồ</button>
+              <a id="openCreateGoogleMapBtn" href="#" target="_blank" rel="noopener" class="rounded bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">Mở Google Maps</a>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500">Nhập địa chỉ rồi bấm xem bản đồ. Sau đó bấm trực tiếp lên bản đồ để ghim vị trí chính xác.</p>
+          <div id="createInteractiveMap" class="mt-3"></div>
+          <p id="createSelectedPoint" class="mt-2 text-xs font-semibold text-slate-600">Chưa ghim vị trí. Hãy bấm lên bản đồ để chọn điểm chính xác.</p>
+          <div id="createCampusInfo" class="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
+            <p class="font-semibold text-slate-800">Các trường đại học quanh Thái Nguyên</p>
+            <p class="mt-1">Bản đồ sẽ dùng địa chỉ bạn nhập để hiển thị khu vực gần nhất. Sau đó bạn bấm lên bản đồ để ghim tọa độ chính xác.</p>
+          </div>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Mô tả chung</label>
+          <textarea name="description" rows="3" class="w-full rounded border px-3 py-2"></textarea>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Số điện thoại chủ nhà</label>
+          <input name="owner_phone" type="text" class="w-full rounded border px-3 py-2" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Loại phòng</label>
+          <select name="room_type" class="w-full rounded border px-3 py-2">
+            <option>Phòng thường</option>
+            <option>Phòng điều hòa</option>
+            <option>Phòng nóng lạnh</option>
+            <option>Phòng đầy đủ</option>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Trạng thái phòng</label>
+          <select name="status" class="w-full rounded border px-3 py-2">
+            <option value="available">Còn trống</option>
+            <option value="rented">Đang thuê</option>
+            <option value="maintenance">Đang sửa chữa</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Ảnh đại diện</label>
+          <input name="image" type="file" accept="image/*" class="w-full rounded border px-3 py-2" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="mb-1 block text-sm font-medium">Ảnh chi tiết phòng</label>
+          <input name="gallery_images" type="file" accept="image/*" multiple class="w-full rounded border px-3 py-2" />
+          <p class="mt-1 text-xs text-slate-500">Có thể chọn nhiều ảnh để hiển thị thêm trong gallery của phòng.</p>
+        </div>
+        <div class="sm:col-span-2">
+          <button type="submit" class="w-full rounded bg-indigo-600 px-4 py-2 font-semibold text-white">Lưu phòng</button>
+        </div>
+      </form>
+    </div>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script>
+      (function () {
+        const address = document.getElementById("createRoomAddress");
+        const mapLat = document.getElementById("createMapLat");
+        const mapLng = document.getElementById("createMapLng");
+        const selectedPoint = document.getElementById("createSelectedPoint");
+        const previewBtn = document.getElementById("previewCreateMapBtn");
+        const openBtn = document.getElementById("openCreateGoogleMapBtn");
+        const defaultQuery = "Thái Nguyên, Việt Nam";
+        const defaultCenter = [21.5942, 105.8482];
+
+        function buildMapQuery() {
+          return (address?.value || "").trim() || defaultQuery;
+        }
+
+        function buildGoogleMapsUrl(query) {
+          return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+        }
+
+        const map = L.map("createInteractiveMap", {
+          center: defaultCenter,
+          zoom: 15,
+          scrollWheelZoom: false,
+        });
+
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+          attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+          subdomains: "abcd",
+          maxZoom: 20,
+        }).addTo(map);
+
+        let marker = null;
+
+        function clearMarker() {
+          if (marker) {
+            map.removeLayer(marker);
+            marker = null;
+          }
+        }
+
+        function setPinnedLocation(lat, lng, label) {
+          mapLat.value = Number(lat).toFixed(6);
+          mapLng.value = Number(lng).toFixed(6);
+          clearMarker();
+          marker = L.marker([lat, lng]).addTo(map);
+          map.setView([lat, lng], 17);
+          const coordsText = `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
+          selectedPoint.textContent = label
+            ? `Đã ghim vị trí: ${label} (${coordsText})`
+            : `Đã ghim vị trí: ${coordsText}`;
+          openBtn.href = buildGoogleMapsUrl(`${lat},${lng}`);
+        }
+
+        async function geocodeQuery(query) {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=vn&q=${encodeURIComponent(query)}`,
+            { headers: { Accept: "application/json" } }
+          );
+          if (!response.ok) throw new Error("geocode_failed");
+          const results = await response.json();
+          if (!results.length) throw new Error("no_result");
+          return {
+            lat: Number(results[0].lat),
+            lng: Number(results[0].lon),
+            label: results[0].display_name,
+          };
+        }
+
+        async function updateMapPreview() {
+          const lat = parseFloat(mapLat?.value || "");
+          const lng = parseFloat(mapLng?.value || "");
+          if (Number.isFinite(lat) && Number.isFinite(lng)) {
+            setPinnedLocation(lat, lng, (address?.value || "").trim());
+            return;
+          }
+
+          const query = buildMapQuery();
+          selectedPoint.textContent = `Đang tìm vị trí theo: ${query}`;
+          openBtn.href = buildGoogleMapsUrl(query);
+
+          try {
+            const result = await geocodeQuery(query);
+            map.setView([result.lat, result.lng], 17);
+            selectedPoint.textContent = `Đã tìm thấy khu vực: ${result.label}. Bấm lên bản đồ để ghim vị trí chính xác.`;
+          } catch (error) {
+            map.setView(defaultCenter, 15);
+            selectedPoint.textContent = "Không tìm thấy địa chỉ chính xác. Hãy di chuyển bản đồ và bấm để ghim thủ công.";
+          }
+        }
+
+        function clearPinnedCoordinates() {
+          mapLat.value = "";
+          mapLng.value = "";
+          clearMarker();
+        }
+
+        map.on("click", function (event) {
+          setPinnedLocation(event.latlng.lat, event.latlng.lng, (address?.value || "").trim());
+        });
+
+        previewBtn?.addEventListener("click", function () {
+          clearPinnedCoordinates();
+          updateMapPreview();
+        });
+        address?.addEventListener("input", clearPinnedCoordinates);
+        address?.addEventListener("change", updateMapPreview);
+
+        updateMapPreview();
+        setTimeout(() => map.invalidateSize(), 150);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+Django==5.2.11
+gunicorn==23.0.0
+pillow==11.0.0
+mssql-django==1.5
+pyodbc==5.2.0
+dj-database-url==2.2.0
+whitenoise==6.8.2

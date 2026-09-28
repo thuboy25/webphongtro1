@@ -1,0 +1,238 @@
+﻿{% load humanize %}
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yêu cầu đặt phòng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 text-slate-800">
+    <div class="mx-auto grid min-h-screen max-w-7xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-12">
+      <aside class="rounded-2xl bg-white p-5 shadow lg:col-span-3">
+        <h2 class="text-xl font-bold">Quản lý tin đăng</h2>
+        <p class="mt-1 text-sm text-slate-500">Xin chào {{ request.user.username }}</p>
+
+        <nav class="mt-6 space-y-2 text-sm">
+          <a href="{% url 'phongtro:dashboard' %}" class="block rounded-lg px-3 py-2 hover:bg-slate-100">Danh sách phòng của tôi</a>
+          <a href="{% url 'phongtro:dashboard_bookings' %}" class="block rounded-lg bg-indigo-50 px-3 py-2 font-semibold text-indigo-700">Yêu cầu đặt phòng</a>
+          <a href="{% url 'phongtro:dashboard_add' %}" class="block rounded-lg px-3 py-2 hover:bg-slate-100">Thêm phòng mới</a>
+          <a href="{% url 'phongtro:home_page' %}" class="block rounded-lg px-3 py-2 hover:bg-slate-100">Về trang chủ</a>
+          <a href="{% url 'phongtro:logout' %}" class="block rounded-lg px-3 py-2 text-red-600 hover:bg-red-50">Đăng xuất</a>
+        </nav>
+      </aside>
+
+      <main class="rounded-2xl bg-white p-5 shadow lg:col-span-9">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h1 class="text-2xl font-extrabold">Quản lý yêu cầu thuê phòng</h1>
+          <a href="{% url 'phongtro:dashboard' %}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Quay lại quản lý phòng</a>
+        </div>
+
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for message in messages %}
+          <div class="rounded-lg px-3 py-2 text-sm {% if 'error' in message.tags %}bg-red-100 text-red-700{% elif 'success' in message.tags %}bg-green-100 text-green-700{% else %}bg-slate-100 text-slate-700{% endif %}">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="mb-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
+          <div class="rounded-xl bg-slate-50 px-3 py-2"><span class="text-slate-500">Tổng</span><p class="font-bold">{{ total_bookings }}</p></div>
+          <div class="rounded-xl bg-amber-50 px-3 py-2"><span class="text-amber-700">Chờ duyệt</span><p class="font-bold text-amber-700">{{ pending_count }}</p></div>
+          <div class="rounded-xl bg-emerald-50 px-3 py-2"><span class="text-emerald-700">Đã duyệt</span><p class="font-bold text-emerald-700">{{ approved_count }}</p></div>
+          <div class="rounded-xl bg-rose-50 px-3 py-2"><span class="text-rose-700">Từ chối</span><p class="font-bold text-rose-700">{{ rejected_count }}</p></div>
+          <div class="rounded-xl bg-slate-100 px-3 py-2"><span class="text-slate-600">Người thuê hủy</span><p class="font-bold text-slate-700">{{ withdrawn_count }}</p></div>
+        </div>
+
+        <form method="get" class="mb-4 flex flex-wrap items-end gap-2">
+          <div>
+            <label for="statusFilter" class="mb-1 block text-sm font-semibold">Lọc trạng thái</label>
+            <select id="statusFilter" name="status" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <option value="" {% if not selected_status %}selected{% endif %}>Tất cả</option>
+              <option value="pending" {% if selected_status == "pending" %}selected{% endif %}>Chờ duyệt</option>
+              <option value="approved" {% if selected_status == "approved" %}selected{% endif %}>Đã duyệt</option>
+              <option value="canceled" {% if selected_status == "canceled" %}selected{% endif %}>Từ chối</option>
+              <option value="withdrawn" {% if selected_status == "withdrawn" %}selected{% endif %}>Người thuê hủy</option>
+            </select>
+          </div>
+          <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Lọc</button>
+          <a href="{% url 'phongtro:dashboard_bookings' %}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Bỏ lọc</a>
+        </form>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-600">
+              <tr>
+                <th class="px-4 py-3">Tên phòng</th>
+                <th class="px-4 py-3">Người đặt</th>
+                <th class="px-4 py-3">SĐT liên hệ</th>
+                <th class="px-4 py-3">Thời gian đặt</th>
+                <th class="px-4 py-3">Trạng thái</th>
+                <th class="px-4 py-3">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for booking in bookings %}
+              <tr class="border-t border-slate-100 align-top">
+                <td class="px-4 py-3">
+                  <p class="font-semibold">{{ booking.room.title }}</p>
+                  <p class="text-xs text-slate-500">{{ booking.room.price|floatformat:0|intcomma }} đ/tháng</p>
+                </td>
+                <td class="px-4 py-3">
+                  <p class="font-semibold">{{ booking.tenant_name }}</p>
+                  <p class="text-xs text-slate-500">Tài khoản: {{ booking.user.username }}</p>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">{{ booking.phone }}</td>
+                <td class="px-4 py-3 whitespace-nowrap">{{ booking.created_at|date:"d/m/Y H:i" }}</td>
+                <td class="px-4 py-3">
+                  {% if booking.status == 'pending' %}
+                  <span class="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">Chờ duyệt</span>
+                  {% elif booking.status == 'approved' %}
+                  <span class="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Đã duyệt</span>
+                  {% elif booking.status == 'canceled' %}
+                  <span class="rounded-full bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-700">Từ chối</span>
+                  {% else %}
+                  <span class="rounded-full bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-700">Người thuê hủy</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex flex-wrap gap-1">
+                    <button
+                      type="button"
+                      class="js-open-booking-modal rounded bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-blue-700"
+                      data-room="{{ booking.room.title }}"
+                      data-room-price="{{ booking.room.price|floatformat:0|intcomma }} đ/tháng"
+                      data-tenant="{{ booking.tenant_name }}"
+                      data-username="{{ booking.user.username }}"
+                      data-phone="{{ booking.phone }}"
+                      data-father-name="{{ booking.father_name }}"
+                      data-father-phone="{{ booking.father_phone }}"
+                      data-mother-name="{{ booking.mother_name }}"
+                      data-mother-phone="{{ booking.mother_phone }}"
+                      data-note="{{ booking.note|default:'-' }}"
+                      data-status="{{ booking.get_status_display }}"
+                      data-created-at="{{ booking.created_at|date:'d/m/Y H:i' }}"
+                    >
+                      Xem
+                    </button>
+                    {% if booking.status == 'pending' %}
+                    <a href="{% url 'phongtro:approve_booking' booking.id %}" class="rounded bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700">Duyệt</a>
+                    <a href="{% url 'phongtro:reject_booking' booking.id %}" class="rounded bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-rose-700">Từ chối</a>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="px-4 py-8 text-center text-slate-500">Chưa có yêu cầu đặt phòng nào.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if is_paginated %}
+        <div class="mt-4 flex items-center justify-center gap-2 text-sm">
+          {% if page_obj.has_previous %}
+          <a class="rounded border px-3 py-1 hover:bg-slate-100" href="?page={{ page_obj.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}">Trước</a>
+          {% endif %}
+          <span class="rounded bg-slate-100 px-3 py-1">Trang {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+          <a class="rounded border px-3 py-1 hover:bg-slate-100" href="?page={{ page_obj.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}">Sau</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </main>
+    </div>
+
+    <div id="bookingDetailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 px-4">
+      <div class="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-2xl">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-slate-900">Chi tiết yêu cầu đặt phòng</h2>
+          <button type="button" id="closeBookingModal" class="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900">X</button>
+        </div>
+        <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+          <div><span class="text-slate-500">Tên phòng:</span> <p id="modalRoom" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Giá:</span> <p id="modalRoomPrice" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Người đặt:</span> <p id="modalTenant" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Tài khoản:</span> <p id="modalUsername" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">SĐT liên hệ:</span> <p id="modalPhone" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Trạng thái:</span> <p id="modalStatus" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Tên bố:</span> <p id="modalFatherName" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">SĐT bố:</span> <p id="modalFatherPhone" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Tên mẹ:</span> <p id="modalMotherName" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">SĐT mẹ:</span> <p id="modalMotherPhone" class="font-semibold text-slate-900"></p></div>
+          <div><span class="text-slate-500">Thời gian đặt:</span> <p id="modalCreatedAt" class="font-semibold text-slate-900"></p></div>
+          <div class="sm:col-span-2"><span class="text-slate-500">Ghi chú:</span> <p id="modalNote" class="font-semibold text-slate-900"></p></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const modal = document.getElementById('bookingDetailModal');
+        const closeBtn = document.getElementById('closeBookingModal');
+        const openButtons = document.querySelectorAll('.js-open-booking-modal');
+        if (!modal || !closeBtn || !openButtons.length) return;
+
+        const fields = {
+          room: document.getElementById('modalRoom'),
+          roomPrice: document.getElementById('modalRoomPrice'),
+          tenant: document.getElementById('modalTenant'),
+          username: document.getElementById('modalUsername'),
+          phone: document.getElementById('modalPhone'),
+          fatherName: document.getElementById('modalFatherName'),
+          fatherPhone: document.getElementById('modalFatherPhone'),
+          motherName: document.getElementById('modalMotherName'),
+          motherPhone: document.getElementById('modalMotherPhone'),
+          note: document.getElementById('modalNote'),
+          status: document.getElementById('modalStatus'),
+          createdAt: document.getElementById('modalCreatedAt'),
+        };
+
+        function setText(el, value) {
+          if (!el) return;
+          el.textContent = value || '-';
+        }
+
+        function openModal(button) {
+          const data = button.dataset;
+          setText(fields.room, data.room);
+          setText(fields.roomPrice, data.roomPrice);
+          setText(fields.tenant, data.tenant);
+          setText(fields.username, data.username);
+          setText(fields.phone, data.phone);
+          setText(fields.fatherName, data.fatherName);
+          setText(fields.fatherPhone, data.fatherPhone);
+          setText(fields.motherName, data.motherName);
+          setText(fields.motherPhone, data.motherPhone);
+          setText(fields.note, data.note);
+          setText(fields.status, data.status);
+          setText(fields.createdAt, data.createdAt);
+
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        }
+
+        function closeModal() {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
+
+        openButtons.forEach((button) => {
+          button.addEventListener('click', () => openModal(button));
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (event) => {
+          if (event.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') closeModal();
+        });
+      })();
+    </script>
+  </body>
+</html>

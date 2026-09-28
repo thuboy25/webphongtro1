@@ -1,0 +1,97 @@
+﻿{% load humanize %}
+{% load currency_filters %}
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bảng điều khiển quản lý tin đăng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 text-slate-800">
+    <div class="mx-auto grid min-h-screen max-w-7xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-12">
+      <aside class="rounded-2xl bg-white p-5 shadow lg:col-span-3">
+        <h2 class="text-xl font-bold">Quản lý tin đăng</h2>
+        <p class="mt-1 text-sm text-slate-500">Xin chào {{ request.user.username }}</p>
+
+        <nav class="mt-6 space-y-2 text-sm">
+          <a href="{% url 'phongtro:dashboard' %}" class="block rounded-lg bg-indigo-50 px-3 py-2 font-semibold text-indigo-700">Danh sách phòng của tôi</a>
+          <a href="{% url 'phongtro:dashboard_bookings' %}" class="block rounded-lg px-3 py-2 hover:bg-slate-100">Yêu cầu đặt phòng</a>
+          <a href="{% url 'phongtro:dashboard_add' %}" class="block rounded-lg px-3 py-2 hover:bg-slate-100">Thêm phòng mới</a>
+          <a href="{% url 'phongtro:home_page' %}" class="block rounded-lg px-3 py-2 hover:bg-slate-100">Về trang chủ</a>
+          <a href="{% url 'phongtro:logout' %}" class="block rounded-lg px-3 py-2 text-red-600 hover:bg-red-50">Đăng xuất</a>
+        </nav>
+      </aside>
+
+      <main class="rounded-2xl bg-white p-5 shadow lg:col-span-9">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h1 class="text-2xl font-extrabold">Phòng trọ của tôi</h1>
+        </div>
+
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for message in messages %}
+          <div class="rounded-lg px-3 py-2 text-sm {% if 'error' in message.tags %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-600">
+              <tr>
+                <th class="px-4 py-3">Hình ảnh</th>
+                <th class="px-4 py-3">Tiêu đề</th>
+                <th class="px-4 py-3">Giá</th>
+                <th class="px-4 py-3">Trạng thái</th>
+                <th class="px-4 py-3">Yêu cầu đặt</th>
+                <th class="px-4 py-3">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for room in rooms %}
+              <tr class="border-t border-slate-100">
+                <td class="px-4 py-3">
+                  {% if room.image %}
+                  <img src="{{ room.image.url }}" alt="{{ room.title }}" class="h-12 w-16 rounded object-cover" />
+                  {% else %}
+                  <div class="flex h-12 w-16 items-center justify-center rounded bg-slate-200 text-xs text-slate-600">Không ảnh</div>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3 font-semibold">{{ room.title }}</td>
+                <td class="px-4 py-3">{{ room.price|floatformat:0|intcomma }} đ</td>
+                <td class="px-4 py-3">
+                  {% if room.status == 'available' %}
+                  <span class="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Còn trống</span>
+                  {% elif room.status == 'rented' %}
+                  <span class="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">Đang thuê</span>
+                  {% else %}
+                  <span class="rounded-full bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-700">Đang sửa chữa</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex flex-wrap gap-1">
+                    <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">Tổng: {{ room.total_bookings|default:0 }}</span>
+                    <span class="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">Chờ: {{ room.pending_bookings|default:0 }}</span>
+                    <span class="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Đã duyệt: {{ room.approved_bookings|default:0 }}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex gap-2">
+                    <a href="{% url 'phongtro:dashboard_edit' room.pk %}" class="rounded bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">Sửa</a>
+                    <a href="{% url 'phongtro:dashboard_delete' room.pk %}" class="rounded bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">Xóa</a>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="px-4 py-8 text-center text-slate-500">Bạn chưa có tin đăng nào.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="vi">
+  {% load static humanize currency_filters %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ room.title }} | Trọ Tốt</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+      :root {
+        --tt-primary: #0f172a;
+        --tt-accent: #ff5a5f;
+        --tt-soft: #f8fafc;
+      }
+
+      body {
+        background: #f7f7f7;
+        color: #1f2937;
+      }
+
+      .detail-shell {
+        max-width: 1240px;
+      }
+
+      .topbar {
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(14px);
+      }
+
+      .hero-card,
+      .section-card,
+      .booking-card,
+      .review-card {
+        border: 0;
+        border-radius: 24px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      }
+
+      .gallery-main {
+        height: 520px;
+        object-fit: cover;
+        border-radius: 24px;
+        width: 100%;
+      }
+
+      .thumb-button {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        border-radius: 18px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .thumb-button img {
+        width: 100%;
+        height: 110px;
+        object-fit: cover;
+        border-radius: 18px;
+        transition: transform 0.25s ease, opacity 0.25s ease;
+      }
+
+      .thumb-button.active img,
+      .thumb-button:hover img {
+        transform: scale(1.03);
+        opacity: 0.92;
+      }
+
+      .stat-chip {
+        border-radius: 18px;
+        background: #fff4f4;
+        color: #b91c1c;
+        padding: 14px 16px;
+      }
+
+      .price-tag {
+        color: var(--tt-accent);
+        font-size: clamp(2rem, 3vw, 3rem);
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .action-stack .btn {
+        border-radius: 16px;
+        padding: 14px 18px;
+        font-weight: 700;
+      }
+
+      .btn-airbnb {
+        background: linear-gradient(135deg, #ff5a5f, #ff385c);
+        border: 0;
+        color: #fff;
+      }
+
+      .btn-airbnb:hover {
+        background: linear-gradient(135deg, #ff4d54, #e11d48);
+        color: #fff;
+      }
+
+      .feature-pill {
+        background: #f1f5f9;
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-size: 0.95rem;
+        font-weight: 500;
+      }
+
+      .section-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+      }
+
+      .review-star {
+        color: #f59e0b;
+      }
+
+      .review-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #fee2e2;
+        color: #b91c1c;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+      }
+
+      .map-frame {
+        width: 100%;
+        min-height: 380px;
+        border: 0;
+        border-radius: 24px;
+      }
+
+      .sticky-summary {
+        position: sticky;
+        top: 96px;
+      }
+
+      @media (max-width: 991.98px) {
+        .gallery-main {
+          height: 360px;
+        }
+
+        .sticky-summary {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar border-bottom sticky-top">
+      <div class="container detail-shell py-3">
+        <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+          <a href="{% url 'phongtro:home_page' %}" class="text-decoration-none d-flex align-items-center gap-3 text-dark">
+            <img src="{% static 'phongtro/images/tro-tot-logo.svg' %}" alt="Trọ Tốt" class="img-fluid" style="height: 72px; width: auto; object-fit: contain;" />
+          </a>
+          <a href="{% url 'phongtro:home_page' %}" class="btn btn-outline-dark rounded-pill px-4">Quay lại danh sách</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container detail-shell py-4 py-lg-5">
+      {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert {% if 'error' in message.tags %}alert-danger{% elif 'success' in message.tags %}alert-success{% else %}alert-secondary{% endif %} rounded-4 border-0 shadow-sm">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <section class="hero-card bg-white p-3 p-lg-4 mb-4">
+        <div class="row g-4 align-items-start">
+          <div class="col-lg-7">
+            <div class="mb-3">
+              <img
+                id="mainRoomImage"
+                src="{{ gallery_urls.0.url }}"
+                alt="{{ gallery_urls.0.caption }}"
+                class="gallery-main"
+              />
+            </div>
+            <div class="row g-3">
+              {% for image in gallery_urls %}
+              <div class="col-4 col-md-3">
+                <button
+                  type="button"
+                  class="thumb-button w-100 {% if forloop.first %}active{% endif %}"
+                  data-gallery-thumb
+                  data-image-url="{{ image.url }}"
+                  data-image-caption="{{ image.caption }}"
+                >
+                  <img src="{{ image.url }}" alt="{{ image.caption }}" />
+                </button>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="col-lg-5">
+            <div class="sticky-summary">
+              <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                <div>
+                  <p class="text-uppercase text-secondary fw-semibold small mb-2">Phòng nổi bật</p>
+                  <h1 class="display-6 fw-bold mb-2">{{ room.title }}</h1>
+                  <div class="d-flex align-items-center gap-2 flex-wrap text-secondary">
+                    <span class="review-star">★</span>
+                    <span class="fw-semibold text-dark">{{ room.average_rating|floatformat:1 }}</span>
+                    <span>({{ room.review_count }} đánh giá)</span>
+                  </div>
+                </div>
+                {% if room.status == 'available' %}
+                <span class="badge rounded-pill bg-success-subtle text-success-emphasis px-3 py-2">Còn trống</span>
+                {% elif room.status == 'rented' %}
+                <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis px-3 py-2">Đang thuê</span>
+                {% else %}
+                <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis px-3 py-2">Bảo trì</span>
+                {% endif %}
+              </div>
+
+              <div class="price-tag mb-4">{{ room.price|floatformat:0|intcomma }} đ/tháng</div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-4 col-6">
+                  <div class="stat-chip h-100">
+                    <div class="text-secondary small mb-1">Diện tích</div>
+                    <div class="fw-bold">{{ room.area }} m²</div>
+                  </div>
+                </div>
+                <div class="col-md-4 col-6">
+                  <div class="stat-chip h-100">
+                    <div class="text-secondary small mb-1">Loại phòng</div>
+                    <div class="fw-bold">{{ room.room_type }}</div>
+                  </div>
+                </div>
+                <div class="col-md-4 col-12">
+                  <div class="stat-chip h-100">
+                    <div class="text-secondary small mb-1">Địa chỉ</div>
+                    <div class="fw-bold">{{ room.address }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="booking-card bg-white border p-4">
+                <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                  <div>
+                    <div class="fw-bold fs-5">Liên hệ nhanh</div>
+                    <div class="text-secondary small">Trao đổi trực tiếp với chủ trọ</div>
+                  </div>
+                  <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis px-3 py-2">Phản hồi nhanh</span>
+                </div>
+
+                <div class="action-stack d-grid gap-3">
+                  {% if room.owner_phone %}
+                  <a href="tel:{{ room.owner_phone }}" class="btn btn-success">Gọi ngay {{ room.owner_phone }}</a>
+                  <a href="https://zalo.me/{{ room.owner_phone }}" target="_blank" rel="noopener" class="btn btn-primary">Chat Zalo</a>
+                  {% else %}
+                  <button type="button" class="btn btn-secondary" disabled>Chưa cập nhật số điện thoại</button>
+                  <button type="button" class="btn btn-secondary" disabled>Chưa có Zalo</button>
+                  {% endif %}
+
+                  {% if request.user.is_authenticated %}
+                  <a href="{% url 'phongtro:book_room' room.id %}" class="btn btn-airbnb">Đặt phòng</a>
+                  {% else %}
+                  <button type="button" class="btn btn-airbnb" data-bs-toggle="modal" data-bs-target="#registerModal">Đăng ký tài khoản để đặt phòng</button>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card bg-white p-4 p-lg-5 mb-4">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <h2 class="section-title">Mô tả</h2>
+            <p class="text-secondary mb-0">Thông tin chi tiết về không gian, vị trí và trải nghiệm lưu trú.</p>
+          </div>
+          <div class="col-lg-8">
+            <div class="fs-6 lh-lg text-secondary">
+              {{ room.description|default:"Phòng sạch sẽ, thoáng mát, phù hợp sinh viên và người đi làm."|linebreaks }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {% if amenities or furnishings %}
+      <section class="section-card bg-white p-4 p-lg-5 mb-4">
+        <div class="row g-4">
+          {% if amenities %}
+          <div class="col-lg-6">
+            <h2 class="section-title">Tiện ích</h2>
+            <div class="d-flex flex-wrap gap-2">
+              {% for item in amenities %}
+              <span class="feature-pill">{{ item }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {% if furnishings %}
+          <div class="col-lg-6">
+            <h2 class="section-title">Nội thất</h2>
+            <div class="d-flex flex-wrap gap-2">
+              {% for item in furnishings %}
+              <span class="feature-pill">{{ item }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+      {% endif %}
+
+      <section class="section-card bg-white p-4 p-lg-5 mb-4">
+        <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-4">
+          <div>
+            <h2 class="section-title mb-1">Đánh giá từ người thuê</h2>
+            <p class="text-secondary mb-0">Những trải nghiệm thực tế từ người đã xem và đặt phòng.</p>
+          </div>
+          <div class="text-end">
+            <div class="fw-bold fs-4">{{ room.average_rating|floatformat:1 }} <span class="review-star">★</span></div>
+            <div class="text-secondary">{{ room.review_count }} lượt đánh giá</div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <div class="border rounded-4 p-4 h-100">
+              <h3 class="h5 fw-bold mb-3">Viết đánh giá</h3>
+              {% if request.user.is_authenticated %}
+              <form action="{% url 'phongtro:add_review' room.id %}" method="post" class="d-grid gap-3">
+                {% csrf_token %}
+                <div>
+                  <label for="rating" class="form-label fw-semibold">Số sao</label>
+                  <select id="rating" name="rating" class="form-select form-select-lg" required>
+                    <option value="">Chọn số sao</option>
+                    <option value="5">5 sao</option>
+                    <option value="4">4 sao</option>
+                    <option value="3">3 sao</option>
+                    <option value="2">2 sao</option>
+                    <option value="1">1 sao</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="comment" class="form-label fw-semibold">Bình luận</label>
+                  <textarea id="comment" name="comment" rows="5" class="form-control form-control-lg" placeholder="Chia sẻ trải nghiệm thực tế của bạn..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-dark btn-lg rounded-4">Gửi đánh giá</button>
+              </form>
+              {% else %}
+              <div class="text-secondary small mb-3">Bạn cần đăng nhập để viết đánh giá cho phòng này.</div>
+              <button type="button" class="btn btn-outline-dark rounded-4 w-100" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập để đánh giá</button>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="row g-3">
+              {% for review in reviews %}
+              <div class="col-md-6">
+                <article class="review-card bg-light p-4 h-100">
+                  <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="review-avatar">{{ review.user.username|first|upper }}</div>
+                    <div>
+                      <div class="fw-bold">{{ review.user.username|slice:":2" }}***</div>
+                      <div class="text-secondary small">{{ review.created_at|date:"d/m/Y H:i" }}</div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    {% for _ in '12345' %}
+                    <span class="review-star">{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}</span>
+                    {% endfor %}
+                  </div>
+                  <p class="text-secondary mb-0 lh-lg">{{ review.comment }}</p>
+                </article>
+              </div>
+              {% empty %}
+              <div class="col-12">
+                <div class="border rounded-4 p-5 text-center text-secondary">Chưa có đánh giá nào cho phòng này.</div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card bg-white p-4 p-lg-5">
+        <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-4">
+          <div>
+            <h2 class="section-title mb-1">Vị trí trên bản đồ</h2>
+            <p class="text-secondary mb-0">Xem chính xác vị trí để di chuyển và khảo sát khu vực xung quanh.</p>
+          </div>
+          <a href="https://www.google.com/maps/search/?api=1&query={{ room_map_query }}" target="_blank" rel="noopener" class="btn btn-outline-dark rounded-pill px-4">Mở Google Maps</a>
+        </div>
+        <iframe
+          title="Google Maps - {{ room.title }}"
+          class="map-frame"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps?q={{ room_map_query }}&hl=vi&z=17&output=embed"
+        ></iframe>
+      </section>
+    </main>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+          <div class="modal-body p-4 p-lg-5">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <h3 class="h3 fw-bold mb-0">Đăng nhập</h3>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'phongtro:login_user' %}" method="post" class="d-grid gap-3">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ next_url }}" />
+              <div>
+                <label for="loginIdentifier" class="form-label fw-semibold">Email hoặc Username</label>
+                <input id="loginIdentifier" name="identifier" type="text" class="form-control form-control-lg" required />
+              </div>
+              <div>
+                <label for="loginRole" class="form-label fw-semibold">Phân loại tài khoản</label>
+                <select id="loginRole" name="role" class="form-select form-select-lg" required>
+                  {% for value, label in login_role_choices %}
+                  <option value="{{ value }}" {% if auth_role == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label for="loginPassword" class="form-label fw-semibold">Mật khẩu</label>
+                <input id="loginPassword" name="password" type="password" class="form-control form-control-lg" required />
+              </div>
+              <button type="submit" class="btn btn-dark btn-lg rounded-4">Đăng nhập</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+          <div class="modal-body p-4 p-lg-5">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <h3 class="h3 fw-bold mb-0">Đăng ký</h3>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'phongtro:register_user' %}" method="post" class="d-grid gap-3">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ next_url }}" />
+              <div>
+                <label for="registerName" class="form-label fw-semibold">Họ tên</label>
+                <input id="registerName" name="full_name" type="text" class="form-control form-control-lg" required />
+              </div>
+              <div>
+                <label for="registerEmail" class="form-label fw-semibold">Email</label>
+                <input id="registerEmail" name="email" type="email" class="form-control form-control-lg" required />
+              </div>
+              <div>
+                <label for="registerPassword" class="form-label fw-semibold">Mật khẩu</label>
+                <input id="registerPassword" name="password" type="password" class="form-control form-control-lg" required />
+              </div>
+              <div>
+                <label for="registerConfirmPassword" class="form-label fw-semibold">Nhập lại mật khẩu</label>
+                <input id="registerConfirmPassword" name="confirm_password" type="password" class="form-control form-control-lg" required />
+              </div>
+              <div>
+                <label for="registerRole" class="form-label fw-semibold">Phân loại tài khoản</label>
+                <select id="registerRole" name="role" class="form-select form-select-lg" required>
+                  {% for value, label in register_role_choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <button type="submit" class="btn btn-airbnb btn-lg rounded-4">Đăng ký</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      (function () {
+        const mainImage = document.getElementById("mainRoomImage");
+        const thumbButtons = document.querySelectorAll("[data-gallery-thumb]");
+        if (!mainImage || !thumbButtons.length) return;
+
+        thumbButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            thumbButtons.forEach((item) => item.classList.remove("active"));
+            button.classList.add("active");
+            mainImage.src = button.getAttribute("data-image-url");
+            mainImage.alt = button.getAttribute("data-image-caption");
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

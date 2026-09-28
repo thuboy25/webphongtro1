@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đặt phòng | Trọ Tốt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-slate-100 px-4 py-10 text-slate-800">
+    <div class="mx-auto w-full max-w-2xl rounded-2xl bg-white p-6 shadow-lg md:p-8">
+      <h1 class="text-2xl font-extrabold text-slate-900">Đặt phòng ngay</h1>
+      <p class="mt-2 text-sm text-slate-600">
+        Bạn đang đặt phòng: <span class="font-semibold">{{ room.title }}</span>
+      </p>
+
+      {% if messages %}
+      <div class="mt-4 space-y-2">
+        {% for message in messages %}
+        <div class="rounded-xl px-4 py-3 text-sm {% if 'error' in message.tags %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post" class="mt-6 space-y-4">
+        {% csrf_token %}
+
+        <div>
+          <label for="tenant_name" class="mb-1 block text-sm font-semibold">Tên khách thuê</label>
+          <input id="tenant_name" name="tenant_name" type="text" required class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none ring-indigo-500 focus:ring" />
+        </div>
+
+        <div>
+          <label for="phone" class="mb-1 block text-sm font-semibold">Số điện thoại liên hệ</label>
+          <input id="phone" name="phone" type="text" required class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none ring-indigo-500 focus:ring" />
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label for="father_name" class="mb-1 block text-sm font-semibold">Họ tên Bố</label>
+            <input id="father_name" name="father_name" type="text" required class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none ring-indigo-500 focus:ring" />
+          </div>
+          <div>
+            <label for="father_phone" class="mb-1 block text-sm font-semibold">SĐT Bố</label>
+            <input id="father_phone" name="father_phone" type="text" required class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none ring-indigo-500 focus:ring" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label for="mother_name" class="mb-1 block text-sm font-semibold">Họ tên Mẹ</label>
+            <input id="mother_name" name="mother_name" type="text" required class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none ring-indigo-500 focus:ring" />
+          </div>
+          <div>
+            <label for="mother_phone" class="mb-1 block text-sm font-semibold">SĐT Mẹ</label>
+            <input id="mother_phone" name="mother_phone" type="text" required class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none ring-indigo-500 focus:ring" />
+          </div>
+        </div>
+
+        <div>
+          <label for="note" class="mb-1 block text-sm font-semibold">Ghi chú thêm</label>
+          <textarea id="note" name="note" rows="4" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none ring-indigo-500 focus:ring" placeholder="Ví dụ: Em có thể đến xem phòng vào cuối tuần..."></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2">
+          <a href="{% url 'phongtro:room_detail' room.id %}" class="rounded-xl border border-slate-300 px-4 py-3 text-center text-sm font-semibold text-slate-700 hover:bg-slate-100">
+            Quay lại
+          </a>
+          <button type="submit" class="rounded-xl bg-orange-500 px-4 py-3 text-sm font-bold text-white hover:bg-orange-600">
+            Xác nhận đặt phòng
+          </button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

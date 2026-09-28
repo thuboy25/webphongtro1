@@ -1,0 +1,33 @@
+﻿<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Xóa phòng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 text-slate-800">
+    <main class="mx-auto max-w-xl px-4 py-12">
+      <div class="rounded-2xl bg-white p-6 shadow">
+        <h1 class="text-2xl font-extrabold text-red-600">Xác nhận xóa tin đăng</h1>
+        <p class="mt-3 text-slate-700">Bạn có chắc chắn muốn xóa phòng <strong>{{ object.title }}</strong>?</p>
+
+        {% if has_active_tenant %}
+        <div class="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          Không thể xóa phòng này vì hiện đang có người thuê hoặc đã có yêu cầu được duyệt.
+        </div>
+        {% endif %}
+
+        <form method="post" class="mt-6 flex gap-3">
+          {% csrf_token %}
+          {% if has_active_tenant %}
+          <button type="button" class="rounded-lg bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-700" disabled>Không thể xóa</button>
+          {% else %}
+          <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Xóa</button>
+          {% endif %}
+          <a href="{% url 'phongtro:dashboard' %}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">Hủy</a>
+        </form>
+      </div>
+    </main>
+  </body>
+</html>

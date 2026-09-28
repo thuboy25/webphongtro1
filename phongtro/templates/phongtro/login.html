@@ -1,0 +1,46 @@
+﻿<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 text-slate-800">
+    <div class="mx-auto mt-16 max-w-md rounded-2xl bg-white p-6 shadow">
+      <h1 class="mb-4 text-2xl font-bold text-slate-900">Đăng nhập</h1>
+
+      {% if messages %}
+      <div class="mb-4 space-y-2">
+        {% for message in messages %}
+        <p class="rounded-lg px-3 py-2 text-sm {% if 'error' in message.tags %}bg-red-100 text-red-700{% elif 'success' in message.tags %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-700{% endif %}">{{ message }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="mb-1 block text-sm font-medium">Email hoặc Username</label>
+          <input name="identifier" type="text" class="w-full rounded-lg border px-3 py-2" required />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium">Phân loại tài khoản</label>
+          <select name="role" class="w-full rounded-lg border px-3 py-2" required>
+            {% for value, label in login_role_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <div class="mb-1 flex items-center justify-between gap-3">
+            <label class="block text-sm font-medium">Mật khẩu</label>
+            <a href="{% url 'phongtro:password_reset' %}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">Quên mật khẩu?</a>
+          </div>
+          <input name="password" type="password" class="w-full rounded-lg border px-3 py-2" required />
+        </div>
+        <button class="w-full rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white" type="submit">Đăng nhập</button>
+      </form>
+    </div>
+  </body>
+</html>

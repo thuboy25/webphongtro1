@@ -1,0 +1,23 @@
+{% extends 'phongtro/base.html' %}
+
+{% block title %}{% if object %}Sua phong{% else %}Them phong{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-4">{% if object %}Sua phong{% else %}Them phong{% endif %}</h1>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Luu</button>
+            <a href="{% url 'phongtro:phong_list' %}" class="btn btn-secondary">Huy</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
