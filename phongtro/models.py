@@ -80,12 +80,30 @@ class Phong(models.Model):
         return self.review_set.count()
 
     def primary_image_url(self):
-        if self.image:
+        if self.image and getattr(self.image, 'url', None):
             return self.image.url
+
         first_gallery_image = self.gallery_images.order_by("sort_order", "id").first()
-        if first_gallery_image and first_gallery_image.image:
+        if first_gallery_image and getattr(first_gallery_image.image, 'url', None):
             return first_gallery_image.image.url
+
         return "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=80"
+
+    def safe_image_url(self):
+        try:
+            if self.image and self.image.storage.exists(self.image.name):
+                return self.image.url
+        except Exception:
+            pass
+
+        try:
+            first_gallery_image = self.gallery_images.order_by("sort_order", "id").first()
+            if first_gallery_image and first_gallery_image.image and first_gallery_image.image.storage.exists(first_gallery_image.image.name):
+                return first_gallery_image.image.url
+        except Exception:
+            pass
+
+        return self.primary_image_url()
 
     def __str__(self):
         return self.title

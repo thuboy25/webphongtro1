@@ -52,11 +52,7 @@
               {% for room in rooms %}
               <tr class="border-t border-slate-100">
                 <td class="px-4 py-3">
-                  {% if room.image %}
-                  <img src="{{ room.image.url }}" alt="{{ room.title }}" class="h-12 w-16 rounded object-cover" />
-                  {% else %}
-                  <div class="flex h-12 w-16 items-center justify-center rounded bg-slate-200 text-xs text-slate-600">Không ảnh</div>
-                  {% endif %}
+                  <img src="{{ room.safe_image_url }}" alt="{{ room.title }}" class="h-12 w-16 rounded object-cover" />
                 </td>
                 <td class="px-4 py-3 font-semibold">{{ room.title }}</td>
                 <td class="px-4 py-3">{{ room.price|floatformat:0|intcomma }} đ</td>

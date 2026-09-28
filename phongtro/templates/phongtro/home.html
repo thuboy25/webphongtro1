@@ -163,11 +163,7 @@
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {% for room in rooms %}
         <article class="overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl">
-          {% if room.image %}
-          <img src="{{ room.image.url }}" alt="{{ room.title }}" class="h-48 w-full object-cover" />
-          {% else %}
-          <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80" alt="{{ room.title }}" class="h-48 w-full object-cover" />
-          {% endif %}
+          <img src="{{ room.safe_image_url }}" alt="{{ room.title }}" class="h-48 w-full object-cover" />
           <div class="p-5">
             <div class="mb-3 flex items-center justify-between">
               <span class="text-xl font-extrabold text-orange-600">{{ room.price }}đ/tháng</span>
