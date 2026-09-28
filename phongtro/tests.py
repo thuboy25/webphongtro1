@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+from unittest.mock import patch
 
 from .models import Phong, RoomBooking, UserProfile
 
@@ -171,3 +173,47 @@ class AccountProfileTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, reverse("phongtro:password_reset"))
+
+
+class ImageUploadUrlTests(TestCase):
+    def test_room_safe_image_url_prefers_uploaded_file_url_even_when_storage_check_fails(self):
+        room = Phong.objects.create(
+            title="Phòng test",
+            price=2000000,
+            area=20,
+            address="Thái Nguyên",
+            room_type="Phòng thường",
+            status=Phong.RoomStatus.AVAILABLE,
+        )
+
+        room.image.save(
+            "room-cover.jpg",
+            SimpleUploadedFile("room-cover.jpg", b"image-bytes", content_type="image/jpeg"),
+            save=False,
+        )
+
+        with patch.object(room.image.storage, "exists", return_value=False):
+            url = room.safe_image_url()
+
+        self.assertTrue(url.startswith("/media/rooms/"))
+        self.assertNotIn("images.unsplash.com", url)
+
+    def test_room_gallery_url_uses_uploaded_file_url_even_when_storage_check_fails(self):
+        room = Phong.objects.create(
+            title="Phòng gallery",
+            price=1800000,
+            area=18,
+            address="Thái Nguyên",
+            room_type="Phòng thường",
+            status=Phong.RoomStatus.AVAILABLE,
+        )
+
+        gallery = room.gallery_images.create(
+            image=SimpleUploadedFile("gallery-1.jpg", b"image-bytes", content_type="image/jpeg"),
+        )
+
+        with patch.object(gallery.image.storage, "exists", side_effect=RuntimeError("storage backend unavailable")):
+            url = room.safe_image_url()
+
+        self.assertTrue(url.startswith("/media/rooms/"))
+        self.assertNotIn("images.unsplash.com", url)

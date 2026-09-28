@@ -79,29 +79,43 @@ class Phong(models.Model):
     def review_count(self):
         return self.review_set.count()
 
+    @staticmethod
+    def _get_image_url(field):
+        if not field:
+            return None
+
+        name = getattr(field, "name", None)
+        if not name:
+            return None
+
+        try:
+            return field.url
+        except Exception:
+            return None
+
     def primary_image_url(self):
-        if self.image and getattr(self.image, 'url', None):
-            return self.image.url
+        image_url = self._get_image_url(self.image)
+        if image_url:
+            return image_url
 
         first_gallery_image = self.gallery_images.order_by("sort_order", "id").first()
-        if first_gallery_image and getattr(first_gallery_image.image, 'url', None):
-            return first_gallery_image.image.url
+        if first_gallery_image:
+            gallery_url = self._get_image_url(first_gallery_image.image)
+            if gallery_url:
+                return gallery_url
 
         return "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=80"
 
     def safe_image_url(self):
-        try:
-            if self.image and self.image.storage.exists(self.image.name):
-                return self.image.url
-        except Exception:
-            pass
+        direct_url = self._get_image_url(self.image)
+        if direct_url:
+            return direct_url
 
-        try:
-            first_gallery_image = self.gallery_images.order_by("sort_order", "id").first()
-            if first_gallery_image and first_gallery_image.image and first_gallery_image.image.storage.exists(first_gallery_image.image.name):
-                return first_gallery_image.image.url
-        except Exception:
-            pass
+        first_gallery_image = self.gallery_images.order_by("sort_order", "id").first()
+        if first_gallery_image:
+            gallery_url = self._get_image_url(first_gallery_image.image)
+            if gallery_url:
+                return gallery_url
 
         return self.primary_image_url()
 
@@ -117,6 +131,15 @@ class RoomImage(models.Model):
 
     class Meta:
         ordering = ["sort_order", "id"]
+
+    def safe_image_url(self):
+        if not self.image:
+            return ""
+
+        try:
+            return self.image.url
+        except Exception:
+            return ""
 
     def __str__(self):
         return f"{self.room.title} - H?nh {self.id}"
