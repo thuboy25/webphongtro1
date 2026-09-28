@@ -104,7 +104,7 @@ class Phong(models.Model):
             if gallery_url:
                 return gallery_url
 
-        return "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=80"
+        return ""
 
     def safe_image_url(self):
         direct_url = self._get_image_url(self.image)

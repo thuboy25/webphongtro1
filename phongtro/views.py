@@ -185,17 +185,20 @@ def room_detail(request, room_id):
         if raw_map_query and "Th?i Nguy?n" not in raw_map_query:
             raw_map_query = f"{raw_map_query}, Th?i Nguy?n, Vi?t Nam"
 
-    gallery_urls = [{"url": room.primary_image_url(), "caption": room.title}]
-    gallery_urls.extend(
-        [
-            {
-                "url": image.image.url,
-                "caption": image.caption or room.title,
-            }
-            for image in room.gallery_images.all()
-            if image.image
-        ]
-    )
+    gallery_urls = []
+    primary_image_url = room.primary_image_url()
+    if primary_image_url:
+        gallery_urls.append({"url": primary_image_url, "caption": room.title})
+
+    for image in room.gallery_images.all():
+        image_url = image.safe_image_url()
+        if image_url and image_url != primary_image_url:
+            gallery_urls.append(
+                {
+                    "url": image_url,
+                    "caption": image.caption or room.title,
+                }
+            )
 
     context = {
         "room": room,

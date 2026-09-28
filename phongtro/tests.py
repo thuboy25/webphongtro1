@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from unittest.mock import patch
 
@@ -175,6 +175,7 @@ class AccountProfileTests(TestCase):
         self.assertContains(response, reverse("phongtro:password_reset"))
 
 
+@override_settings(SECURE_SSL_REDIRECT=False)
 class ImageUploadUrlTests(TestCase):
     def test_room_safe_image_url_prefers_uploaded_file_url_even_when_storage_check_fails(self):
         room = Phong.objects.create(
@@ -197,6 +198,28 @@ class ImageUploadUrlTests(TestCase):
 
         self.assertTrue(url.startswith("/media/rooms/"))
         self.assertNotIn("images.unsplash.com", url)
+
+    def test_room_detail_uses_uploaded_cover_for_main_image_and_thumbnail(self):
+        room = Phong.objects.create(
+            title="Phòng có ảnh gốc",
+            price=2000000,
+            area=20,
+            address="Thái Nguyên",
+            room_type="Phòng thường",
+            status=Phong.RoomStatus.AVAILABLE,
+        )
+        room.image.save(
+            "original-upload.jpg",
+            SimpleUploadedFile("original-upload.jpg", b"original-image", content_type="image/jpeg"),
+        )
+
+        response = self.client.get(reverse("phongtro:room_detail", args=[room.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, room.image.url)
+        self.assertContains(response, "data-image-url=\"" + room.image.url + "\"")
+        self.assertNotContains(response, "unsplash.com")
+        self.assertNotContains(response, "pexels.com")
 
     def test_room_gallery_url_uses_uploaded_file_url_even_when_storage_check_fails(self):
         room = Phong.objects.create(

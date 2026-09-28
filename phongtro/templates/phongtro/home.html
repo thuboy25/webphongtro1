@@ -20,10 +20,7 @@
         border: 1px solid rgb(226 232 240);
       }
       .hero-bg {
-        background-image: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.6)),
-          url("https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1600&q=80");
-        background-size: cover;
-        background-position: center;
+        background: linear-gradient(135deg, #0f172a, #334155);
       }
 
       .modal-open {
@@ -163,7 +160,9 @@
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {% for room in rooms %}
         <article class="overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl">
-          <img src="{{ room.safe_image_url }}" alt="{{ room.title }}" class="h-56 w-full object-cover" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=80';" />
+          {% if room.safe_image_url %}
+          <img src="{{ room.safe_image_url }}" alt="{{ room.title }}" class="h-56 w-full object-cover" />
+          {% endif %}
           <div class="p-5">
             <div class="mb-3 flex items-center justify-between">
               <span class="text-xl font-extrabold text-orange-600">{{ room.price }}đ/tháng</span>

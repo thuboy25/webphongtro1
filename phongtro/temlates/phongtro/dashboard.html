@@ -56,7 +56,9 @@
               {% for room in rooms %}
               <tr class="border-t border-slate-100">
                 <td class="px-4 py-3">
-                  <img src="{{ room.safe_image_url }}" alt="{{ room.title }}" class="h-12 w-16 rounded object-cover" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=80';" />
+                  {% if room.safe_image_url %}
+                  <img src="{{ room.safe_image_url }}" alt="{{ room.title }}" class="h-12 w-16 rounded object-cover" />
+                  {% endif %}
                 </td>
                 <td class="px-4 py-3 font-semibold">{{ room.title }}</td>
                 <td class="px-4 py-3">{{ room.price|floatformat:0|intcomma }} đ</td>
