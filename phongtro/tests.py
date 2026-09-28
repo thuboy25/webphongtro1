@@ -1,8 +1,10 @@
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 from .models import Phong, RoomBooking, UserProfile
 
@@ -177,6 +179,17 @@ class AccountProfileTests(TestCase):
 
 @override_settings(SECURE_SSL_REDIRECT=False)
 class ImageUploadUrlTests(TestCase):
+    def test_uploaded_media_is_served_when_debug_is_disabled(self):
+        with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            image_path = Path(media_root) / "rooms" / "uploaded-room.jpg"
+            image_path.parent.mkdir(parents=True)
+            image_path.write_bytes(b"uploaded-image-bytes")
+
+            response = self.client.get("/media/rooms/uploaded-room.jpg")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(b"".join(response.streaming_content), b"uploaded-image-bytes")
+
     def test_room_safe_image_url_prefers_uploaded_file_url_even_when_storage_check_fails(self):
         room = Phong.objects.create(
             title="Phòng test",
@@ -199,6 +212,27 @@ class ImageUploadUrlTests(TestCase):
         self.assertTrue(url.startswith("/media/rooms/"))
         self.assertNotIn("images.unsplash.com", url)
 
+    def test_room_safe_image_url_falls_back_to_media_path_when_url_property_fails(self):
+        room = Phong.objects.create(
+            title="Phòng fallback",
+            price=2000000,
+            area=20,
+            address="Thái Nguyên",
+            room_type="Phòng thường",
+            status=Phong.RoomStatus.AVAILABLE,
+        )
+
+        room.image.save(
+            "fallback-room.jpg",
+            SimpleUploadedFile("fallback-room.jpg", b"image-bytes", content_type="image/jpeg"),
+            save=False,
+        )
+
+        with patch("django.db.models.fields.files.FieldFile.url", new_callable=PropertyMock, side_effect=ValueError("url unavailable")):
+            url = room.safe_image_url()
+
+        self.assertEqual(url, "/media/rooms/fallback-room.jpg")
+
     def test_room_detail_uses_uploaded_cover_for_main_image_and_thumbnail(self):
         room = Phong.objects.create(
             title="Phòng có ảnh gốc",
@@ -220,6 +254,10 @@ class ImageUploadUrlTests(TestCase):
         self.assertContains(response, "data-image-url=\"" + room.image.url + "\"")
         self.assertNotContains(response, "unsplash.com")
         self.assertNotContains(response, "pexels.com")
+
+        image_response = self.client.get(room.image.url)
+        self.assertEqual(image_response.status_code, 200)
+        self.assertEqual(b"".join(image_response.streaming_content), b"original-image")
 
     def test_room_gallery_url_uses_uploaded_file_url_even_when_storage_check_fails(self):
         room = Phong.objects.create(

@@ -160,9 +160,12 @@
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {% for room in rooms %}
         <article class="overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl">
-          {% if room.safe_image_url %}
-          <img src="{{ room.safe_image_url }}" alt="{{ room.title }}" class="h-56 w-full object-cover" />
-          {% endif %}
+          <img
+            src="{% if room.safe_image_url %}{{ room.safe_image_url }}{% else %}{% static 'phongtro/images/tro-tot-logo.svg' %}{% endif %}"
+            alt="{{ room.title }}"
+            class="h-56 w-full object-cover"
+            onerror="this.onerror=null;this.src='{% static 'phongtro/images/tro-tot-logo.svg' %}';"
+          />
           <div class="p-5">
             <div class="mb-3 flex items-center justify-between">
               <span class="text-xl font-extrabold text-orange-600">{{ room.price }}đ/tháng</span>

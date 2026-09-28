@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
@@ -82,16 +83,21 @@ class Phong(models.Model):
     @staticmethod
     def _get_image_url(field):
         if not field:
-            return None
+            return ""
 
         name = getattr(field, "name", None)
         if not name:
-            return None
+            return ""
 
         try:
             return field.url
         except Exception:
-            return None
+            media_prefix = getattr(settings, "MEDIA_URL", "/media/")
+            safe_name = str(name).lstrip("/")
+            return f"{media_prefix.rstrip('/')}/{safe_name}"
+
+        # Trả về URL mặc định nếu storage backend hiện đang lỗi nhưng file vẫn có tên.
+        return ""
 
     def primary_image_url(self):
         image_url = self._get_image_url(self.image)
@@ -139,7 +145,9 @@ class RoomImage(models.Model):
         try:
             return self.image.url
         except Exception:
-            return ""
+            media_prefix = getattr(settings, "MEDIA_URL", "/media/")
+            safe_name = str(self.image.name).lstrip("/")
+            return f"{media_prefix.rstrip('/')}/{safe_name}"
 
     def __str__(self):
         return f"{self.room.title} - H?nh {self.id}"
